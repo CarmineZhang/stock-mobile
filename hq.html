@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no user-scalable=no"/>
+    <title>行情</title>
+    <style type="text/css">
+        *{
+            margin: 0;
+            -webkit-user-select:none ;
+        }
+    </style>
+</head>
+
+<body>
+	<div>
+        <input type="button" id="time" value="分" key="0"/>
+        <input type="button" id="k1" value="1" key="1"/>
+        <input type="button" id="k5" value="5" key="2"/>
+        <input type="button" id="k15" value="15" key="3"/>
+        <input type="button" id="k30" value="30" key="4"/>
+        <input type="button" id="k60" value="60" key="5"/>
+        <input type="button" id="kday" value="日" key="6"/>
+        <input type="button" id="kweek" value="周" key="7"/>
+        <input type="button" id="kmonth" value="月" key="8"/>
+        <input type="button" id="kyear" value="年" key="9"/>
+	</div>
+    <svg xmlns="http://www.w3.org/2000/svg" id="chart" style="background-color: black;">
+    </svg>
+    <script type="text/javascript" src="lib/jquery.js"></script>
+    <script type="text/javascript" src="lib/underscore.js"></script>
+    <script type="text/javascript" src="build/common.js"></script>
+    <script type="text/javascript" src="build/index.js"></script>
+</body>
+
+</html>
