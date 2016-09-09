@@ -93,8 +93,7 @@ DrawTimeLine.prototype = {
         } else {
             this.svgElement.appendChild(this.charts);
         }
-        crossHair.createCrossHair(this.svgElement, this.svgMargin.top, this.svgMargin.left,
-            this.svgMargin.right, this.svgMargin.bottom, this.svgWidth, this.svgHeight, 
+        crossHair.createCrossHair(this.svgElement, this.svgMargin, this.svgWidth, this.svgHeight,
             this.pk.c);
         this.linePath = null;
     },
@@ -146,12 +145,23 @@ DrawTimeLine.prototype = {
             for (var i = 0; i < ll; i++) {
                 item = arr[i];
                 if (item) {
-                    if (item.priceId > last.priceId) {
-                        if ((new Date(last.time)).getMinutes() != (new Date(item.time)).getMinutes()) {
-                            this.originalData.push(item);
-                            last = item;
+                    if (item.IDX > last.priceId) {
+                        if ((new Date(last.time)).getMinutes() != (new Date(item.TIME)).getMinutes()) {
+                            var temp = {
+                                time: item.TIME,
+                                price: item.PRI,
+                                avgPrice: 0,
+                                volume: item.TVOL,
+                                priceId: item.IDX
+                            };
+                            this.originalData.push(temp);
+                            last = temp;
                         } else {
-                            this.originalData[this.originalData.length - 1].price = item.price;
+                            var lastItem = this.originalData[this.originalData.length - 1];
+                            lastItem.time = item.TIME;
+                            lastItem.price = item.PRI;
+                            lastItem.volume += item.TVOL;
+                            lastItem.priceId = item.IDX;
                         }
                     }
                 }

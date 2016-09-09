@@ -11,13 +11,71 @@ function DrawKLine(element, overlayElement, detail) {
         top: 1,
         bottom: 20
     };
-    this.minutes = [0, 60000, 5 * 60000, 15 * 60000, 30 * 60000, 60 * 60000];
     this.kLineData = [];
     this.newData = [];
     this.minCandleCount = 11;
     this.maxCandleCount = 300;
 }
 DrawKLine.prototype = {
+    getStartTime: function() {
+        var startItem = this.kLineData.length && this.kLineData[this.kLineData.length - 1];
+        if (startItem) {
+            var t = new Date(startItem.TIME - this.period * 60000);
+            if (this.period < 6) {
+                return t.format("yyyyMMddHHmm");
+            } else {
+                return t.format("yyyyMMdd");
+            }
+        }
+        return -1;
+    },
+    isAllowQuery: function(value) {
+        var temp = this.candleCountInScreen + value * 2;
+        if (temp > this.kLineData.length && temp <= this.maxCandleCount) {
+            return true;
+        }
+        return false;
+    },
+    /**
+     * 设置当前柱子数量
+     * @param value
+     */
+    setCandleCount: function(value) {
+        var len = this.kLineData.length;
+        if (len < this.minCandleCount) {
+            this.candleCountInScreen = this.minCandleCount;
+            return;
+        }
+        if (value > 0) {
+            if (this.endIndex !== 0) {
+                var end = this.endIndex - value;
+                if (end <= 0) {
+                    this.endIndex = 0;
+                } else {
+                    this.endIndex -= value;
+                }
+            }
+            var temp = this.candleCountInScreen + value * 2;
+            if (temp > this.maxCandleCount) {
+                this.candleCountInScreen = this.maxCandleCount;
+            } else {
+                this.candleCountInScreen = temp;
+            }
+        } else {
+            var diff = this.candleCountInScreen + value * 2;
+            if (diff < this.minCandleCount) {
+                this.endIndex = 0;
+                this.candleCountInScreen = this.minCandleCount;
+            } else {
+                if (this.endIndex >= Math.abs(value)) {
+                    this.endIndex -= value;
+                } else {
+                    this.endIndex = 0;
+                }
+                this.candleCountInScreen = diff;
+            }
+        }
+    },
     /**
      * 获取当前柱子的前一个柱子
      * @param index
@@ -52,12 +110,8 @@ DrawKLine.prototype = {
     showCrossHair: function(x) {
         var data = this._getDataByMousePosition(x);
         if (data) {
-            var time = util.getDateString(data.time);
-            if (this.period >= 6) {
-                time = time.slice(0, -5);
-            }
             var pre = this._getPreCandle(data.i);
-            crossHair.show(data.x, data.y, time, data.openPrice, data.closePrice, data.highPrice, data.lowPrice,pre?pre.closePrice:null);
+            crossHair.show(data, pre ? pre.closePrice : null);
         }
     },
     hiddenCrossHair: function() {
@@ -96,7 +150,10 @@ DrawKLine.prototype = {
         } else {
             this.svgElement.appendChild(this.charts);
         }
-        crossHair.createCrossHair(this.svgElement, this.svgMargin.top, this.svgMargin.left, this.svgMargin.right, this.svgMargin.bottom, this.svgWidth, this.svgHeight);
+        crossHair.createCrossHair(this.svgElement, this.svgMargin, this.svgWidth, this.svgHeight);
+    },
+    setLastTime:function(value){
+        this.endTime=value;
     },
 
     /**
@@ -187,31 +244,28 @@ DrawKLine.prototype = {
             vol = 0,
             flag = false;
         var list = data.filter(function(item, array, index) {
-            return item.PRID > last.PRID;
+            return item.IDX > last.PRID;
         });
         ll = list.length;
         if (ll > 0) {
             for (i = 0; i < ll; i++) {
                 item = list[i];
-                if (this._judgeTime(last.time, item.time)) {
-                    last.volume += item.volume;
-                    if (item.price > last.HIGP) {
-                        last.HIGP = item.price
-                    } else if (item.price < last.LOWP) {
-                        last.LOWP = item.price;
+                if (this._judgeTime(last.TIME, item.TIME)) {
+                    if (item.PRI > last.HIGP) {
+                        last.HIGP = item.PRI
+                    } else if (item.PRI < last.LOWP) {
+                        last.LOWP = item.PRI;
                     }
-                    last.CLOP = item.price;
-                    last.PRID = item.priceId;
-
+                    last.CLOP = item.PRI;
+                    last.PRID = item.IDX;
                 } else {
                     var ob = {
-                        HIGP: item.price,
-                        LOWP: item.price,
-                        OPEP: item.price,
-                        CLOP: item.price,
-                        TIME: item.time,
-                        volume: item.volume,
-                        PRID: item.priceId
+                        HIGP: item.PRI,
+                        LOWP: item.PRI,
+                        OPEP: item.PRI,
+                        CLOP: item.PRI,
+                        TIME: item.TIME,
+                        PRID: item.IDX
                     };
                     this.kLineData.unshift(ob);
                     last = this.kLineData[0];
@@ -468,7 +522,7 @@ DrawKLine.prototype = {
                         textColor: constant.TXT_COLOR,
                         hAlign: "start",
                         vAlign: "middle"
-                    }, this.svgElement);
+                    }, this.charts);
                     startX = item.x;
                     time = item.time;
                 }

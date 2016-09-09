@@ -40,17 +40,14 @@ let crossHair_data_change = util.createCommonSpan({
     x: 8,
     dy: 13
 }, crossHair_data);
-var margin = {},
+var margin =null,
     height, width,closePrice=0;
 export default {
-    createCrossHair: function(parent, t, l, r, b, w, h) {
+    createCrossHair: function(parent, m, w, h) {
         parent.appendChild(crossHair_h);
         parent.appendChild(crossHair_v);
         parent.appendChild(crossHair);
-        margin.top = t;
-        margin.left = l;
-        margin.right = r;
-        margin.bottom = b;
+        margin=m;
         width = w;
         height = h;
     },

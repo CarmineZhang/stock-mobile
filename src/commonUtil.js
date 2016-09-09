@@ -39,27 +39,28 @@ Date.prototype.format = function(fmt) {
 
 export default {
     dayArr: ["日", "一", "二", "三", "四", "五", "六"],
-    sendRequest: function(url) {
+    sendRequest: function(req) {
         return $.ajax({
-            url: url,
-            type: "GET",
+            url: this.getQuotationUrl(),
+            type: "POST",
             timeout: 1000 * 90,
-            dataType: "json"
+            dataType: "json",
+            data:JSON.stringify(req)
         }).fail(function(jqXHR, textStatus, errorThrown) {
             console.log(textStatus);
         });
     },
     setQuotationSession: function(value) {
-        window.sessionStorage.setItem("quotationSession", value);
+        window.sessionStorage.setItem("sessionQId", value);
     },
     getQuotationSession: function() {
-        return window.sessionStorage.getItem("quotationSession");
+        return window.sessionStorage.getItem("sessionQId");
     },
     getQuotationUrl: function() {
-        return "";
+        return "http://10.0.0.38:8080/collection_quotationqueryweb/jsonQuery.do";
     },
     getMarketId: function() {
-        return "";
+        return "111";
     },
     getTimeString: function(t) {
         var d = new Date(t);
@@ -80,8 +81,7 @@ export default {
         var datestr = d.format("yyyy/MM/dd"),
             day;
         if (p >= 6) {
-            day = this.dayArr[d.getDay()];
-            return datestr + "(" + day + ")";
+            return datestr ;
         } else {
             var timestr = d.toTimeString();
             day = this.dayArr[d.getDay()];
