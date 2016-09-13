@@ -106,7 +106,7 @@ export default {
     getTime: function() {
         var dfd = $.Deferred();
         if (!startTime) {
-            http.getTradeTime(function(rep){
+            http.getTradeTime(function(rep) {
                 var mmts = rep.MMTS,
                     header = mmts.REPH,
                     body = mmts.REPB;
@@ -130,23 +130,25 @@ export default {
             kline.setDataFromPanKou(list);
         }
     },
-    getPanKou: function() {
+    getPanKou: function(callback) {
         return http.getPanKou({
             CID: commodityId,
             DIVN: 0,
             FIVN: 0,
             HANN: nextId,
             PRIN: 0
-        }, this.handlerPanKou.bind(this));
-    },
-    handlerPanKou: function(rep) {
-        var mmts = rep.MMTS,
-            data = mmts.REPB;
-        if (mmts.REPH.RET == 0) {
-            if (mmts.REPB.CID == commodityId) {
-                this.setPanKouData(data.DIVL, data.HIGP, data.LOWP);
+        }, function(rep) {
+            var mmts = rep.MMTS,
+                data = mmts.REPB;
+            if (mmts.REPH.RET == 0 && mmts.REPB.CID == commodityId) {
+                if (period === 0) {
+                    timeline.drawDynamicData(data.DIVL, data.HIGP, data.LOWP);
+                } else {
+                    kline.setDataFromPanKou(data.DIVL);
+                }
+                callback && callback(data);
             }
-        }
+        });
     },
     getTimeData: function() {
         return http.getTimeData({
@@ -234,4 +236,3 @@ export default {
         }
     }
 }
-
